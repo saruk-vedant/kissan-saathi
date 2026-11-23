@@ -43,7 +43,10 @@ def get_weather(location_id: str, days: int):
     conn = get_db_connection()
     try:
         rows = conn.execute(
-            "SELECT date, precip_mm, precip_prob, temp_max, temp_min FROM weather_daily WHERE location_id=? ORDER BY date DESC LIMIT ?",
+            "SELECT date, precip_mm, precip_prob, temp_max, temp_min FROM ("
+            " SELECT date, precip_mm, precip_prob, temp_max, temp_min FROM weather_daily"
+            " WHERE location_id=? ORDER BY date DESC LIMIT ?"
+            ") ORDER BY date ASC",
             (location_id, days)
         ).fetchall()
         
