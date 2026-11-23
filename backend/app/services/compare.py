@@ -1,7 +1,7 @@
 from backend.app.db.connection import get_db_connection
 from backend.app.ingestion.routing import get_distance
 from backend.app.ingestion.weather import get_weather
-from backend.app.services.forecast import generate_forecast
+from backend.app.services.forecast import generate_forecast, get_today_price
 from backend.app.services.net_return import calculate_scenarios
 
 
@@ -33,8 +33,9 @@ async def compare_mandis(crop_id: str, home_mandi_id: str, quantity_q: float, or
         weather_res = get_weather(mandi_id, horizon_days)
         weather_data = weather_res.get("weather", [])
         
-        current_price = forecasts[0]["p50"] if forecasts else 1000.0
-        full_forecasts = [{"horizon": 0, "p10": current_price, "p50": current_price, "p90": current_price}] + forecasts
+        # Sell-today row: today's actual (last observed) price with a real
+        # uncertainty band, not tomorrow's forecast price.
+        full_forecasts = [get_today_price(crop_id, mandi_id, origin_date)] + forecasts
         
         for f in full_forecasts:
             h = f["horizon"]
